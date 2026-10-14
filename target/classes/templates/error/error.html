@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+
+<head th:replace="~{fragments/layout :: head(#{error.title})}"></head>
+
+<body>
+  <nav th:replace="~{fragments/layout :: nav}"></nav>
+  <main>
+    <h1 th:text="#{error.title}">Error</h1>
+    <div class="alert error" th:text="#{${messageKey}(${messageArg})}">Not found</div>
+    <a class="btn secondary" th:href="@{/dishes}" th:text="#{common.back.list}">Back to list</a>
+  </main>
+</body>
+
+</html>

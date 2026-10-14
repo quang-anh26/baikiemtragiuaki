@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+
+<head th:replace="~{fragments/layout :: head(${dish.id == null} ? #{dish.create.title} : #{dish.edit.title})}"></head>
+
+<body>
+  <nav th:replace="~{fragments/layout :: nav}"></nav>
+  <main>
+    <h1 th:text="${dish.id == null} ? #{dish.create.title} : #{dish.edit.title}">Dish</h1>
+
+    <form class="card" method="post" th:object="${dish}"
+      th:action="${dish.id == null} ? @{/dishes/create} : @{/dishes/{id}/edit(id=${dish.id})}">
+
+      <div class="field">
+        <label th:text="#{dish.field.name}">Name</label>
+        <input type="text" th:field="*{name}">
+        <span class="err" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+      </div>
+
+      <div class="field">
+        <label th:text="#{dish.field.category}">Category</label>
+        <select th:field="*{dishCategoryId}">
+          <option value="" th:text="#{dish.category.select}">-- Select --</option>
+          <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+        </select>
+        <span class="err" th:if="${#fields.hasErrors('dishCategoryId')}" th:errors="*{dishCategoryId}"></span>
+      </div>
+
+      <div class="field">
+        <label th:text="#{dish.field.price}">Price</label>
+        <input type="text" th:field="*{price}" inputmode="decimal">
+        <span class="err" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
+      </div>
+
+      <div class="field">
+        <label th:text="#{dish.field.time} + ' (' + #{common.minutes} + ')'">Prep time</label>
+        <input type="text" th:field="*{preparationTime}" inputmode="numeric">
+        <span class="err" th:if="${#fields.hasErrors('preparationTime')}" th:errors="*{preparationTime}"></span>
+      </div>
+
+      <div class="field">
+        <label><input type="checkbox" th:field="*{isAvailable}" style="width:auto"> <span
+            th:text="#{dish.status.available}">Available</span></label>
+      </div>
+
+      <div class="field">
+        <label th:text="#{dish.field.description}">Description</label>
+        <textarea rows="4" th:field="*{description}"></textarea>
+        <span class="err" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+      </div>
+
+      <div class="row">
+        <button class="btn" type="submit" th:text="#{common.save}">Save</button>
+        <a class="btn secondary" th:href="@{/dishes}" th:text="#{common.cancel}">Cancel</a>
+      </div>
+    </form>
+  </main>
+</body>
+
+</html>

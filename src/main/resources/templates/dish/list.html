@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+
+<head th:replace="~{fragments/layout :: head(#{dish.list.title})}"></head>
+
+<body>
+  <nav th:replace="~{fragments/layout :: nav}"></nav>
+  <main>
+    <div class="row" style="justify-content:space-between">
+      <h1 th:text="#{dish.list.title}">Dishes</h1>
+      <a class="btn" th:href="@{/dishes/create}" th:text="#{nav.create}">New dish</a>
+    </div>
+
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <form class="card filters" method="get" th:action="@{/dishes}">
+      <div>
+        <label th:text="#{filter.keyword}">Search</label>
+        <input type="text" name="keyword" th:value="${keyword}" th:placeholder="#{filter.keyword.placeholder}">
+      </div>
+      <div>
+        <label th:text="#{filter.category}">Category</label>
+        <select name="categoryId">
+          <option value="" th:text="#{common.all}">All</option>
+          <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"
+            th:selected="${categoryId != null and categoryId == c.id}"></option>
+        </select>
+      </div>
+      <div>
+        <label th:text="#{filter.status}">Status</label>
+        <select name="available">
+          <option value="" th:text="#{common.all}">All</option>
+          <option value="true" th:selected="${available != null and available}" th:text="#{dish.status.available}">
+            Available</option>
+          <option value="false" th:selected="${available != null and !available}" th:text="#{dish.status.unavailable}">
+            Unavailable</option>
+        </select>
+      </div>
+      <div>
+        <label th:text="#{filter.minPrice}">Min price</label>
+        <input type="number" step="any" min="0" name="minPrice" th:value="${minPrice}">
+      </div>
+      <div>
+        <label th:text="#{filter.maxPrice}">Max price</label>
+        <input type="number" step="any" min="0" name="maxPrice" th:value="${maxPrice}">
+      </div>
+      <div>
+        <label th:text="#{filter.sort}">Sort</label>
+        <select name="sort">
+          <option value="" th:text="#{sort.default}">Default</option>
+          <option value="price_asc" th:selected="${sort == 'price_asc'}" th:text="#{sort.price.asc}">Price ascending
+          </option>
+          <option value="price_desc" th:selected="${sort == 'price_desc'}" th:text="#{sort.price.desc}">Price descending
+          </option>
+          <option value="time_asc" th:selected="${sort == 'time_asc'}" th:text="#{sort.time.asc}">Prep time ascending
+          </option>
+        </select>
+      </div>
+      <div class="row">
+        <button class="btn" type="submit" th:text="#{common.search}">Search</button>
+        <a class="btn secondary" th:href="@{/dishes}" th:text="#{common.reset}">Reset</a>
+      </div>
+    </form>
+
+    <div class="alert error" th:if="${priceError}" th:text="#{error.price.range}"></div>
+
+    <div class="card muted" th:if="${!priceError and #lists.isEmpty(dishes)}" th:text="#{dish.empty}">No dishes found.
+    </div>
+
+    <table th:if="${!#lists.isEmpty(dishes)}">
+      <thead>
+        <tr>
+          <th th:text="#{dish.field.image}">Image</th>
+          <th th:text="#{dish.field.name}">Name</th>
+          <th th:text="#{dish.field.category}">Category</th>
+          <th th:text="#{dish.field.price}">Price</th>
+          <th th:text="#{dish.field.time}">Prep time</th>
+          <th th:text="#{dish.field.status}">Status</th>
+          <th th:text="#{common.actions}">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="d : ${dishes}">
+          <td>
+            <img class="thumb" th:if="${d.thumbnail != null}" th:src="${d.thumbnail.imageUrl}" alt="">
+            <span class="noimg" th:if="${d.thumbnail == null}" th:text="#{dish.noimage.short}">No image</span>
+          </td>
+          <td><a th:href="@{/dishes/{id}(id=${d.id})}" th:text="${d.name}"></a></td>
+          <td th:text="${d.dishCategory.name}"></td>
+          <td th:text="${#numbers.formatDecimal(d.price, 1, 'COMMA', 2, 'POINT')}"></td>
+          <td>
+            <span th:text="${d.preparationTime} + ' ' + #{common.minutes}"></span>
+            <span class="badge b-quick" th:if="${d.quick}" th:text="#{time.quick}">Quick</span>
+            <span class="badge b-reg" th:unless="${d.quick}" th:text="#{time.regular}">Regular</span>
+          </td>
+          <td>
+            <span class="badge b-ok" th:if="${d.isAvailable}" th:text="#{dish.status.available}">Available</span>
+            <span class="badge b-off" th:unless="${d.isAvailable}"
+              th:text="#{dish.status.unavailable}">Unavailable</span>
+          </td>
+          <td class="actions">
+            <a class="btn small secondary" th:href="@{/dishes/{id}(id=${d.id})}" th:text="#{common.detail}">Detail</a>
+            <a class="btn small secondary" th:href="@{/dishes/{id}/edit(id=${d.id})}" th:text="#{common.edit}">Edit</a>
+            <form class="inline" method="post" th:action="@{/dishes/{id}/delete(id=${d.id})}"
+              th:onsubmit="'return confirm(\'' + #{common.confirm.delete} + '\');'">
+              <button class="btn small danger" type="submit" th:text="#{common.delete}">Delete</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+
+</html>

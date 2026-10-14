@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+
+<head th:replace="~{fragments/layout :: head(#{dish.detail.title})}"></head>
+
+<body>
+  <nav th:replace="~{fragments/layout :: nav}"></nav>
+  <main>
+    <div class="row" style="justify-content:space-between">
+      <h1 th:text="${dish.name}">Dish</h1>
+      <div class="row">
+        <a class="btn secondary" th:href="@{/dishes/{id}/edit(id=${dish.id})}" th:text="#{common.edit}">Edit</a>
+        <a class="btn secondary" th:href="@{/dishes}" th:text="#{common.back}">Back</a>
+      </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="card">
+      <p><b th:text="#{dish.field.category}">Category</b>: <span th:text="${dish.dishCategory.name}"></span></p>
+      <p><b th:text="#{dish.field.price}">Price</b>: <span
+          th:text="${#numbers.formatDecimal(dish.price, 1, 'COMMA', 2, 'POINT')}"></span></p>
+      <p><b th:text="#{dish.field.time}">Prep time</b>: <span
+          th:text="${dish.preparationTime} + ' ' + #{common.minutes}"></span>
+        <span class="badge b-quick" th:if="${dish.quick}" th:text="#{time.quick}">Quick</span>
+        <span class="badge b-reg" th:unless="${dish.quick}" th:text="#{time.regular}">Regular</span>
+      </p>
+      <p><b th:text="#{dish.field.status}">Status</b>:
+        <span class="badge b-ok" th:if="${dish.isAvailable}" th:text="#{dish.status.available}">Available</span>
+        <span class="badge b-off" th:unless="${dish.isAvailable}"
+          th:text="#{dish.status.unavailable}">Unavailable</span>
+      </p>
+      <p><b th:text="#{dish.field.description}">Description</b>:
+        <span th:if="${dish.description != null}" th:text="${dish.description}"></span>
+        <span class="muted" th:if="${dish.description == null}" th:text="#{common.none}">None</span>
+      </p>
+    </div>
+
+    <h2 th:text="#{dish.images}">Images</h2>
+
+    <div class="card muted" th:if="${#lists.isEmpty(dish.images)}" th:text="#{dish.noimage}">This dish has no images
+      yet.</div>
+
+    <div class="gallery" th:if="${!#lists.isEmpty(dish.images)}">
+      <div class="card" th:each="img : ${dish.images}">
+        <img th:src="${img.imageUrl}" th:alt="${dish.name}">
+        <p>
+          <span class="badge b-ok" th:if="${img.isThumbnail}" th:text="#{image.thumbnail}">Thumbnail</span>
+        </p>
+        <div class="row">
+          <form class="inline" method="post" th:if="${!img.isThumbnail}"
+            th:action="@{/dishes/{id}/images/{imgId}/thumbnail(id=${dish.id}, imgId=${img.id})}">
+            <button class="btn small secondary" type="submit" th:text="#{image.setThumbnail}">Set as thumbnail</button>
+          </form>
+          <form class="inline" method="post"
+            th:action="@{/dishes/{id}/images/{imgId}/delete(id=${dish.id}, imgId=${img.id})}"
+            th:onsubmit="'return confirm(\'' + #{common.confirm.delete} + '\');'">
+            <button class="btn small danger" type="submit" th:text="#{common.delete}">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <form class="card" method="post" th:action="@{/dishes/{id}/images(id=${dish.id})}">
+      <h3 style="margin-top:0" th:text="#{image.add}">Add image</h3>
+      <div class="field">
+        <label th:text="#{image.url}">Image URL</label>
+        <input type="text" name="imageUrl" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label><input type="checkbox" name="thumbnail" value="true" style="width:auto"> <span
+            th:text="#{image.setThumbnail}">Set as thumbnail</span></label>
+      </div>
+      <button class="btn" type="submit" th:text="#{image.add}">Add image</button>
+    </form>
+  </main>
+</body>
+
+</html>
