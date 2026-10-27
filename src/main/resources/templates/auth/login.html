@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+
+<head th:replace="~{fragments/layout :: head(#{login.title})}"></head>
+
+<body>
+  <nav th:replace="~{fragments/layout :: nav}"></nav>
+  <main style="max-width:420px">
+    <h1 th:text="#{login.title}">Sign in</h1>
+
+    <div class="alert error" id="loginError" style="display:none"></div>
+
+    <form class="card" id="loginForm" th:attr="data-err-invalid=#{login.error.invalid},data-err-network=#{login.error.network}">
+      <div class="field">
+        <label for="username" th:text="#{login.username}">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password" th:text="#{login.password}">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required
+          style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font:inherit">
+      </div>
+      <button class="btn" type="submit" id="loginBtn" th:text="#{login.button}">Sign in</button>
+    </form>
+
+    <div class="card muted">
+      <b th:text="#{login.demo}">Demo accounts</b><br>
+      admin / admin123 (ADMIN)<br>
+      user / user123 (USER)
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var form = document.getElementById('loginForm');
+      var errBox = document.getElementById('loginError');
+      var btn = document.getElementById('loginBtn');
+
+      function showError(msg) { errBox.textContent = msg; errBox.style.display = 'block'; }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errBox.style.display = 'none';
+        btn.disabled = true;
+
+        // 1) Client gui yeu cau dang nhap len server
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+          })
+        })
+          .then(function (res) {
+            if (res.status === 401) { showError(form.dataset.errInvalid); return null; }
+            if (!res.ok) { showError(form.dataset.errNetwork); return null; }
+            return res.json();
+          })
+          .then(function (data) {
+            if (!data) return;
+            // 2) Server tra JWT -> client luu lai de gui kem cac lan goi API sau
+            try { localStorage.setItem('jwt', data.token); } catch (e) { }
+            window.location.href = '/dishes';
+          })
+          .catch(function () { showError(form.dataset.errNetwork); })
+          .finally(function () { btn.disabled = false; });
+      });
+    })();
+  </script>
+</body>
+
+</html>

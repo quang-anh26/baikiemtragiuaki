@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+
+<head th:replace="~{fragments/layout :: head(#{demo.title})}"></head>
+
+<body>
+  <nav th:replace="~{fragments/layout :: nav}"></nav>
+  <main>
+    <h1 th:text="#{demo.title}">JWT API demo</h1>
+    <p class="muted" th:text="#{demo.intro}">Each button calls the REST API with the JWT stored in the browser.</p>
+
+    <div class="card">
+      <b th:text="#{demo.token}">Current JWT</b>
+      <pre id="tokenBox" style="white-space:pre-wrap;word-break:break-all;margin:6px 0 0">-</pre>
+    </div>
+
+    <div class="card row">
+      <button class="btn" data-path="/api/auth/me" data-mode="valid">GET /api/auth/me</button>
+      <button class="btn" data-path="/api/dishes" data-mode="valid">GET /api/dishes (USER, ADMIN)</button>
+      <button class="btn" data-path="/api/admin/stats" data-mode="valid">GET /api/admin/stats (ADMIN)</button>
+      <button class="btn secondary" data-path="/api/dishes" data-mode="none" th:text="#{demo.notoken}">No token</button>
+      <button class="btn secondary" data-path="/api/dishes" data-mode="tampered" th:text="#{demo.tampered}">Tampered token</button>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <b>HTTP</b> <span id="statusBadge" class="badge">-</span>
+        <span id="resultText" class="muted"></span>
+      </div>
+      <pre id="outBox" style="white-space:pre-wrap;word-break:break-all;margin:8px 0 0"></pre>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var tokenBox = document.getElementById('tokenBox');
+      var token = null;
+      try { token = localStorage.getItem('jwt'); } catch (e) { }
+      tokenBox.textContent = token || '(none)';
+
+      function call(path, mode) {
+        var headers = {};
+        if (mode === 'valid' && token) headers['Authorization'] = 'Bearer ' + token;
+        if (mode === 'tampered' && token) headers['Authorization'] = 'Bearer ' + token.slice(0, -3) + 'abc';
+
+        return fetch(path, { headers: headers }).then(function (res) {
+          return res.text().then(function (body) {
+            var badge = document.getElementById('statusBadge');
+            var ok = res.status >= 200 && res.status < 300;
+            badge.textContent = res.status;
+            badge.className = 'badge ' + (ok ? 'b-ok' : 'b-off');
+            document.getElementById('resultText').textContent =
+              ok ? 'authorized' : (res.status === 403 ? 'unauthorized (403 Forbidden - wrong role)' : 'unauthorized (401)');
+            try { body = JSON.stringify(JSON.parse(body), null, 2); } catch (e) { }
+            document.getElementById('outBox').textContent = body;
+          });
+        });
+      }
+
+      document.querySelectorAll('button[data-path]').forEach(function (b) {
+        b.addEventListener('click', function () { call(b.dataset.path, b.dataset.mode); });
+      });
+    })();
+  </script>
+</body>
+
+</html>

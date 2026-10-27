@@ -8,7 +8,7 @@
   <main>
     <div class="row" style="justify-content:space-between">
       <h1 th:text="#{dish.list.title}">Dishes</h1>
-      <a class="btn" th:href="@{/dishes/create}" th:text="#{nav.create}">New dish</a>
+      <a class="btn" th:href="@{/dishes/create}" th:text="#{nav.create}" sec:authorize="hasRole('ADMIN')">New dish</a>
     </div>
 
     <div th:replace="~{fragments/layout :: flash}"></div>
@@ -100,8 +100,8 @@
           </td>
           <td class="actions">
             <a class="btn small secondary" th:href="@{/dishes/{id}(id=${d.id})}" th:text="#{common.detail}">Detail</a>
-            <a class="btn small secondary" th:href="@{/dishes/{id}/edit(id=${d.id})}" th:text="#{common.edit}">Edit</a>
-            <form class="inline" method="post" th:action="@{/dishes/{id}/delete(id=${d.id})}"
+            <a class="btn small secondary" sec:authorize="hasRole('ADMIN')" th:href="@{/dishes/{id}/edit(id=${d.id})}" th:text="#{common.edit}">Edit</a>
+            <form class="inline" method="post" sec:authorize="hasRole('ADMIN')" th:action="@{/dishes/{id}/delete(id=${d.id})}"
               th:onsubmit="'return confirm(\'' + #{common.confirm.delete} + '\');'">
               <button class="btn small danger" type="submit" th:text="#{common.delete}">Delete</button>
             </form>

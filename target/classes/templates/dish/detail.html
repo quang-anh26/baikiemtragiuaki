@@ -9,7 +9,7 @@
     <div class="row" style="justify-content:space-between">
       <h1 th:text="${dish.name}">Dish</h1>
       <div class="row">
-        <a class="btn secondary" th:href="@{/dishes/{id}/edit(id=${dish.id})}" th:text="#{common.edit}">Edit</a>
+        <a class="btn secondary" sec:authorize="hasRole('ADMIN')" th:href="@{/dishes/{id}/edit(id=${dish.id})}" th:text="#{common.edit}">Edit</a>
         <a class="btn secondary" th:href="@{/dishes}" th:text="#{common.back}">Back</a>
       </div>
     </div>
@@ -47,7 +47,7 @@
         <p>
           <span class="badge b-ok" th:if="${img.isThumbnail}" th:text="#{image.thumbnail}">Thumbnail</span>
         </p>
-        <div class="row">
+        <div class="row" sec:authorize="hasRole('ADMIN')">
           <form class="inline" method="post" th:if="${!img.isThumbnail}"
             th:action="@{/dishes/{id}/images/{imgId}/thumbnail(id=${dish.id}, imgId=${img.id})}">
             <button class="btn small secondary" type="submit" th:text="#{image.setThumbnail}">Set as thumbnail</button>
@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <form class="card" method="post" th:action="@{/dishes/{id}/images(id=${dish.id})}">
+    <form class="card" method="post" sec:authorize="hasRole('ADMIN')" th:action="@{/dishes/{id}/images(id=${dish.id})}">
       <h3 style="margin-top:0" th:text="#{image.add}">Add image</h3>
       <div class="field">
         <label th:text="#{image.url}">Image URL</label>

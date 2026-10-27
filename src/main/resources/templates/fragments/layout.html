@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:fragment="head(title)">
   <meta charset="UTF-8">
@@ -275,9 +275,17 @@
   <nav th:fragment="nav">
     <span class="brand" th:text="#{app.title}">Dish Management</span>
     <a th:href="@{/dishes}" th:text="#{nav.dishes}">Dishes</a>
-    <a th:href="@{/categories}" th:text="#{nav.categories}">Categories</a>
-    <a th:href="@{/dishes/create}" th:text="#{nav.create}">New dish</a>
+    <a th:href="@{/categories}" th:text="#{nav.categories}" sec:authorize="isAuthenticated()">Categories</a>
+    <a th:href="@{/dishes/create}" th:text="#{nav.create}" sec:authorize="hasRole('ADMIN')">New dish</a>
+    <a th:href="@{/api-demo}" th:text="#{nav.apidemo}" sec:authorize="isAuthenticated()">JWT demo</a>
     <span class="spacer"></span>
+    <span sec:authorize="isAuthenticated()" style="font-size:13px">
+      <span sec:authentication="name">user</span>
+      <span class="badge b-quick" sec:authorize="hasRole('ADMIN')">ADMIN</span>
+      <span class="badge b-reg" sec:authorize="!hasRole('ADMIN')">USER</span>
+      <a href="#" onclick="doLogout(); return false;" th:text="#{nav.logout}">Logout</a>
+    </span>
+    <a th:href="@{/login}" th:text="#{nav.login}" sec:authorize="!isAuthenticated()">Login</a>
     <span class="lang">
       <!-- JS giu nguyen toan bo query string (dieu kien tim kiem/loc) va chi doi tham so lang -->
       <a href="#" data-lang="en" th:classappend="${#locale.language == 'en'} ? 'active'"
@@ -286,6 +294,11 @@
         onclick="switchLang('vi'); return false;" th:text="#{lang.vi}">Tiếng Việt</a>
     </span>
     <script>
+      function doLogout() {
+        try { localStorage.removeItem('jwt'); } catch (e) { }
+        fetch('/api/auth/logout', { method: 'POST' }).finally(function () { window.location.href = '/login'; });
+      }
+
       function switchLang(lang) {
         var url = new URL(window.location.href);
         url.searchParams.set('lang', lang);
